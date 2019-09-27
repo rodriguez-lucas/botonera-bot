@@ -52,7 +52,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'botonera-bot.urls'
+ROOT_URLCONF = 'urls'
 
 TEMPLATES = [
     {
