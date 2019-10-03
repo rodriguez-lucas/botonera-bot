@@ -1,7 +1,5 @@
-from django.core.exceptions import ValidationError
-
-from app.models import Sound
 from command.base import Result, Command
+from sound_bank.base import SoundBank, SoundBankException
 
 
 class SoundFromUUIDCommand(Command):
@@ -12,10 +10,10 @@ class SoundFromUUIDCommand(Command):
         result = Result()
 
         try:
-            sound = Sound.objects.get(_uuid=self._uuid)
+            sound = SoundBank().sound_from_uuid(uuid=self._uuid)
             result.set_object(sound)
-        except(Sound.DoesNotExist, ValidationError):
-            result.add_error('Sound not found')
+        except SoundBankException:
+            result.add_error("Sound not found")
 
         return result
 
@@ -23,7 +21,12 @@ class SoundFromUUIDCommand(Command):
 class LastAddedSoundCommand(Command):
     def execute(self):
         result = Result()
-        result.set_object(Sound.objects.order_by('-id').first())
+
+        try:
+            result.set_object(SoundBank().last_added_sound())
+        except SoundBankException:
+            result.add_error("Can't return last added sound")
+
         return result
 
 

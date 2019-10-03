@@ -1,11 +1,11 @@
 from django.http import HttpResponse, HttpResponseNotFound
 from django.views import View
 
-from app.commands import SoundFromUUIDCommand, LastAddedSoundCommand
+from sound_bank.commands import SoundFromUUIDCommand, LastAddedSoundCommand
 
 
 class GetSound(View):
-    def get(self, request, uuid):
+    def get(self, request, uuid, title):
         result = SoundFromUUIDCommand(uuid=uuid).execute()
 
         if result.has_errors():
