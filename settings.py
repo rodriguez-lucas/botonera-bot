@@ -25,7 +25,7 @@ SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 PRODUCTION_SERVER_DOMAIN = os.environ['PRODUCTION_SERVER_DOMAIN']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ['DEBUG'] is 'True'
 
 ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1', PRODUCTION_SERVER_DOMAIN]
 
