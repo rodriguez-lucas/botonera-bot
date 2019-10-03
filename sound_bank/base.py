@@ -22,15 +22,17 @@ class SoundBank:
         return Sound.objects.last()
 
     def register_or_get_user(self, user_id, username, first_name='', last_name=''):
-        return SoundBankUser.objects.get_or_create(_user_id=user_id, _username=username, _first_name=first_name,
-                                                   _last_name=last_name)
+        user, _ = SoundBankUser.objects.get_or_create(_user_id=user_id, _username=username, _first_name=first_name,
+                                                      _last_name=last_name)
+
+        return user
 
     def user_add_sound(self, user, sound_title, sound_key_words, sound_binary_data, upload_datetime):
         Sound.objects.create(_title=sound_title, _key_words=sound_key_words, _bin=sound_binary_data,
                              _uploader=user, _upload_datetime=upload_datetime)
 
     def user_listened_sound(self, user, sound):
-        sound_rank = SoundRank.objects.get_or_create(_user=user, _sound=sound)
+        sound_rank, _ = SoundRank.objects.get_or_create(_user=user, _sound=sound)
         sound_rank.inc_sound_count()
         sound_rank.save()
 
