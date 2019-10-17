@@ -3,7 +3,6 @@ from django.views import View
 
 from sound_bank.commands import SoundFromUUIDCommand, LastAddedSoundCommand
 
-
 class GetSound(View):
     def get(self, request, uuid, title):
         result = SoundFromUUIDCommand(uuid=uuid).execute()
@@ -12,7 +11,12 @@ class GetSound(View):
             return HttpResponseNotFound(result.errors_as_str())
 
         sound = result.get_object()
-        return HttpResponse(sound.binary_data(), content_type='audio/mpeg')
+        return HttpResponse(sound.binary_data(), content_type='audio/*')
+
+        # response = HttpResponse()
+        # response.write(sound.binary_data())
+        # response['Content-Type'] = 'audio'
+        # return response
 
 
 class SoundsList(View):

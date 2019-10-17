@@ -10,6 +10,7 @@ class SoundBankAPI(AbstractSoundBankAPI):
         return self._sound_bank().sounds_for_user(user=user, query=query)
 
     def user_has_selected_sound_by_id(self, user, sound_id):
+        # todo falta implementar
         print('User selected sound', user, sound_id)
 
     def static_url_for_sound(self, sound):
