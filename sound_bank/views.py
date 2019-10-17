@@ -11,12 +11,7 @@ class GetSound(View):
             return HttpResponseNotFound(result.errors_as_str())
 
         sound = result.get_object()
-        return HttpResponse(sound.binary_data(), content_type='audio/*')
-
-        # response = HttpResponse()
-        # response.write(sound.binary_data())
-        # response['Content-Type'] = 'audio'
-        # return response
+        return HttpResponse(sound.binary_data(), content_type='audio/mpeg')
 
 
 class SoundsList(View):

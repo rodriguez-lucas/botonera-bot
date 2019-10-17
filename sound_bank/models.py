@@ -33,7 +33,7 @@ class Sound(models.Model):
         return self._title
 
     def binary_data(self):
-        return self._bin
+        return bytes(self._bin)
 
     def upload_datetime(self):
         return self._upload_datetime
