@@ -14,9 +14,10 @@ class SoundBankAPI(AbstractSoundBankAPI):
         print('User selected sound', user, sound_id)
 
     def static_url_for_sound(self, sound):
+        sound_title = ''.join([i if ord(i) < 128 else '' for i in sound.title()]).replace(' ', '_')
         return '{base_url}/{sound_uuid}/{sound_title}'.format(base_url=GET_SOUND_URL,
                                                               sound_uuid=sound.uuid(),
-                                                              sound_title=sound.title().replace(' ', '_'))
+                                                              sound_title=sound_title)
 
     def user_from_telegram_user(self, telegram_user):
         return self._sound_bank().register_or_get_user(user_id=telegram_user['id'],
