@@ -3,6 +3,7 @@ from django.views import View
 
 from sound_bank.commands import SoundFromUUIDCommand, LastAddedSoundCommand
 
+
 class GetSound(View):
     def get(self, request, uuid, title):
         result = SoundFromUUIDCommand(uuid=uuid).execute()

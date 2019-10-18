@@ -17,8 +17,9 @@ class BotoneraBot:
         self._set_handlers()
 
     def run(self):
+        logger.info('Starting bot')
         self._updater.start_polling()
-        self._updater.idle()
+        self._updater.idle(stop_signals=[])
 
     def _set_handlers(self):
         self._dispatcher.add_handler(CommandHandler("start", self._start_command_handler))
