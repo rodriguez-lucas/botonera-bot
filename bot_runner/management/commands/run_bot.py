@@ -1,9 +1,10 @@
 import logging
 from django.core.management.base import BaseCommand
-from telegram_bot.base import BotoneraBot
-from telegram_bot.sound_bank_api import AbstractSoundBankAPI
-from settings import BOT_TOKEN, GET_SOUND_URL
-from sound_bank.base import SoundBank, SoundBankException
+from botonera_bot.bot import BotoneraBot
+from botonera_bot.abstract_sound_bank import AbstractSoundBank, RemoteSound
+from web_sound_bank.commands import UserFromIdCommand, SoundsForUserCommand, SoundFromIdCommand, \
+    UserListenedSoundCommand, CreateUserIfItDoesNotExistCommand
+from web_sound_bank.settings import BOT_TOKEN, GET_SOUND_URL
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -11,36 +12,45 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 
-class SoundBankAPI(AbstractSoundBankAPI):
-    def sounds_for_user(self, user, query):
-        return self._sound_bank().sounds_for_user(user=user, query=query)
+class WebSoundBank(AbstractSoundBank):
+    def sounds_for_user(self, user_id, query):
+        user_cmd_result = UserFromIdCommand(user_id=user_id).execute()
 
-    def user_has_selected_sound_by_id(self, user, sound_id):
-        try:
-            sound = self._sound_bank().sound_from_uuid(sound_id)
-            self._sound_bank().user_listened_sound(user=user, sound=sound)
-        except SoundBankException as e:
-            logger.info('Exception: {exception} - User: {user} - sound_id: {sound_id}'.format(exception=e, user=user,
-                                                                                              sound_id=sound_id))
+        if user_cmd_result.has_errors():
+            logger.info('UserCommandErrors: {}'.format(user_cmd_result.errors_as_str()))
+            return []
 
-    def static_url_for_sound(self, sound):
+        user = user_cmd_result.get_object()
+        sounds = SoundsForUserCommand(user=user, query=query).execute().get_object()
+        return [
+            RemoteSound(sound_id=sound.id(), title=sound.title(), url=self._static_url_for_sound(sound=sound))
+            for sound in sounds
+        ]
+
+    def user_has_selected_sound(self, user_id, sound_id):
+        user_cmd_result = UserFromIdCommand(user_id=user_id).execute()
+        sound_cmd_result = SoundFromIdCommand(sound_id=sound_id).execute()
+
+        if user_cmd_result.has_errors() or sound_cmd_result.has_errors():
+            logger.info('UserCommandErrors: {} - SoundCommandErrors: {}'.format(user_cmd_result.errors_as_str(),
+                                                                                sound_cmd_result.errors_as_str()))
+            return
+
+        UserListenedSoundCommand(user=user_cmd_result.get_object(), sound=sound_cmd_result.get_object()).execute()
+
+    def create_user_if_it_does_not_exist(self, user_id, username, first_name, last_name):
+        return CreateUserIfItDoesNotExistCommand(user_id=user_id, username=username, first_name=first_name,
+                                                 last_name=last_name).execute()
+
+    def _static_url_for_sound(self, sound):
         sound_title = ''.join([i if ord(i) < 128 else '' for i in sound.title()]).replace(' ', '_')
         return '{base_url}/{sound_uuid}/{sound_title}'.format(base_url=GET_SOUND_URL,
-                                                              sound_uuid=sound.uuid(),
+                                                              sound_uuid=sound.id(),
                                                               sound_title=sound_title)
-
-    def user_from_telegram_user(self, telegram_user):
-        return self._sound_bank().register_or_get_user(user_id=telegram_user['id'],
-                                                       username=telegram_user['username'],
-                                                       first_name=telegram_user['first_name'],
-                                                       last_name=telegram_user['last_name'])
-
-    def _sound_bank(self) -> SoundBank:
-        return SoundBank()
 
 
 class Command(BaseCommand):
-    help = 'Run telegram bot: BotoneraBot with sound_bank'
+    help = 'Run telegram bot: botonera_bot with web_sound_bank'
 
     def handle(self, *args, **options):
-        BotoneraBot(bot_token=BOT_TOKEN, sound_bank_api=SoundBankAPI()).run()
+        BotoneraBot(bot_token=BOT_TOKEN, sound_bank=WebSoundBank()).run()

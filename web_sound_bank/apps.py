@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class AppConfig(AppConfig):
-    name = 'sound_bank'
+    name = 'web_sound_bank'
