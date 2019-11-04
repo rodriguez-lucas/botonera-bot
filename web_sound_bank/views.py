@@ -1,8 +1,21 @@
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.template.response import TemplateResponse
+from django.urls import reverse
 from django.views import View
 
-from web_sound_bank.commands import SoundFromIdCommand, SoundsForUserCommand, UserFromIdCommand
+from web_sound_bank.commands import SoundFromIdCommand, SoundsForUserCommand, UserFromIdCommand, \
+    LoginUserFromTokenCommand, UserIsLoggedInCommand, LoggedInUserCommand
+
+
+class LoginView(View):
+    def get(self, request, token):
+        result = LoginUserFromTokenCommand(token=token, request=request).execute()
+        if result.has_errors():
+            redirect_url = reverse('login-required')
+        else:
+            redirect_url = reverse('home')
+
+        return HttpResponseRedirect(redirect_url)
 
 
 class GetSound(View):
@@ -16,18 +29,22 @@ class GetSound(View):
         return HttpResponse(sound.binary_data(), content_type='audio/mpeg')
 
 
-class SoundsList(View):
+class LoggedInView(View):
+    def dispatch(self, request, *args, **kwargs):
+        user_is_logged_in = UserIsLoggedInCommand(request=request).execute().get_object()
+        if not user_is_logged_in:
+            return HttpResponseRedirect(reverse('login-required'))
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def user(self):
+        return LoggedInUserCommand(request=self.request).execute().get_object()
+
+
+class SoundsList(LoggedInView):
     def get(self, request, *args, **kwargs):
-        user_id = request.GET.get('user_id')
+        sounds = SoundsForUserCommand(user=self.user()).execute().get_object()
 
-        user = None
-        sounds = []
-        user_cmd_result = UserFromIdCommand(user_id=user_id).execute()
-
-        if not user_cmd_result.has_errors():
-            user = user_cmd_result.get_object()
-            sounds = SoundsForUserCommand(user=user).execute().get_object()
-
-        context = {'user': user, 'sounds': sounds}
+        context = {'user': self.user(), 'sounds': sounds}
         response = TemplateResponse(request=request, template='sounds-list.html', context=context)
         return response

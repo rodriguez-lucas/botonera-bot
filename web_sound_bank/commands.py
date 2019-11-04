@@ -73,6 +73,63 @@ class SoundsForUserCommand(Command):
         return result
 
 
+class LoginTokenForUserCommand(Command):
+    def __init__(self, user):
+        self._user = user
+
+    def execute(self):
+        result = Result()
+
+        token = SoundBank().token_for_user(user=self._user)
+        result.set_object(token)
+
+        return result
+
+
+class LoginUserFromTokenCommand(Command):
+    def __init__(self, token, request):
+        self._token = token
+        self._request = request
+
+    def execute(self):
+        result = Result()
+
+        try:
+            user, token_has_expired = SoundBank().user_from_token(token=self._token)
+            if token_has_expired:
+                result.add_error("Token has expired")
+            else:
+                SoundBank().delete_token_for_user(user=user)
+                two_hours = 60 * 60 * 2
+                self._request.session.set_expiry(two_hours)
+                self._request.session['user_id'] = user.user_id()
+                result.set_object(user)
+        except UserNotFoundException:
+            result.add_error("User not found")
+
+        return result
+
+
+class UserIsLoggedInCommand(Command):
+    def __init__(self, request):
+        self._request = request
+
+    def execute(self):
+        result = Result()
+        result.set_object('user_id' in self._request.session)
+        return result
+
+
+class LoggedInUserCommand(Command):
+    def __init__(self, request):
+        self._request = request
+
+    def execute(self):
+        result = Result()
+        result.set_object(UserFromIdCommand(user_id=self._request.session['user_id']).execute().get_object())
+        return result
+
+
 class AddSoundCommand(Command):
     def execute(self):
         # todo add sound to database

@@ -1,3 +1,7 @@
+import hashlib
+import time
+import uuid
+
 from django.db import models
 
 
@@ -7,7 +11,7 @@ class User(models.Model):
     _first_name = models.CharField(max_length=100, blank=True, null=True)
     _last_name = models.CharField(max_length=100, blank=True, null=True)
 
-    def id(self):
+    def user_id(self):
         return self._id
 
     def username(self):
@@ -33,7 +37,7 @@ class Sound(models.Model):
 
     _is_approved = models.BooleanField(default=False)
 
-    def id(self):
+    def sound_id(self):
         return self._id
 
     def title(self):
@@ -68,3 +72,36 @@ class SoundRank(models.Model):
 
     def inc_count(self):
         self._count += 1
+
+
+class UserLoginToken(models.Model):
+    _user = models.OneToOneField(User, on_delete=models.PROTECT)
+    _token = models.CharField(max_length=64, unique=True)
+    _expiration_timestamp = models.BigIntegerField()
+
+    @classmethod
+    def for_user(cls, user):
+        try:
+            user_login_token = cls.objects.get(_user=user)
+        except cls.DoesNotExist:
+            user_login_token = cls(_user=user)
+
+        return user_login_token
+
+    def user(self) -> User:
+        return self._user
+
+    def token(self) -> str:
+        return self._token
+
+    def set_token_and_expiration(self, expiration=60*60*1) -> None:
+        self._expiration_timestamp = int(time.time() + expiration)
+        self._token = hashlib.sha3_256((uuid.uuid4().hex + self._user.user_id()).encode('utf-8')).hexdigest()
+
+    def has_expired(self) -> bool:
+        return time.time() > self._expiration_timestamp
+
+    def __str__(self):
+        return '{username}'.format(username=self.user().username())
+
+

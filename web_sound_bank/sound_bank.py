@@ -1,10 +1,10 @@
 import hashlib
-from typing import List
+from typing import List, Tuple
 
 from django.db.models import Q, Sum
 from django.db.models.functions import Coalesce
 
-from web_sound_bank.models import Sound, User, SoundRank
+from web_sound_bank.models import Sound, User, SoundRank, UserLoginToken
 
 
 class UserNotFoundException(Exception):
@@ -27,6 +27,22 @@ class SoundBank:
         except User.DoesNotExist:
             raise UserNotFoundException
 
+    def user_from_token(self, token) -> Tuple[User, bool]:
+        try:
+            user_login_token = UserLoginToken.objects.get(_token=token)
+            return user_login_token.user(), user_login_token.has_expired()
+        except UserLoginToken.DoesNotExist:
+            raise UserNotFoundException
+
+    def token_for_user(self, user: User) -> str:
+        user_login_token = UserLoginToken.for_user(user=user)
+        user_login_token.set_token_and_expiration()
+        user_login_token.save()
+        return user_login_token.token()
+
+    def delete_token_for_user(self, user: User) -> None:
+        UserLoginToken.objects.filter(_user=user).delete()
+
     def sound_from_id(self, sound_id) -> Sound:
         try:
             return Sound.objects.get(_id=sound_id)
@@ -34,7 +50,7 @@ class SoundBank:
             raise SoundNotFoundException
 
     def sounds_for_user(self, user: User, query='') -> List[Sound]:
-        approved_or_uploaded_sounds = Q(_is_approved=True) | Q(_uploader_id=user.id())
+        approved_or_uploaded_sounds = Q(_is_approved=True) | Q(_uploader=user)
         query_matches_sound = Q(_title__icontains=query) | Q(_tags__icontains=query)
         qualified_sounds_filter = Q(approved_or_uploaded_sounds & query_matches_sound)
 
@@ -52,6 +68,6 @@ class SoundBank:
         sound_rank.save()
 
     def user_add_sound(self, user: User, title, tags, binary_data, upload_datetime) -> Sound:
-        sound_id = hashlib.sha3_256(binary_data + user.id().encode('utf-8')).hexdigest()
+        sound_id = hashlib.sha3_256(binary_data + user.user_id().encode('utf-8')).hexdigest()
         return Sound.objects.create(_id=sound_id, _title=title, _tags=tags, _bin=binary_data,
                                     _upload_datetime=upload_datetime, _uploader=user)

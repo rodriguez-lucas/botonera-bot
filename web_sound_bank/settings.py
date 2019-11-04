@@ -131,5 +131,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 GET_SOUND_URL = os.environ['GET_SOUND_URL']
+LOGIN_BASE_URL = os.environ['LOGIN_BASE_URL']
 
 BOT_TOKEN = os.environ['BOT_TOKEN']
