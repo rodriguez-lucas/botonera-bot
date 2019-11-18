@@ -6,7 +6,7 @@ from base64 import b64decode
 from datetime import datetime
 from django.db import migrations
 
-with open('default_sounds/default_sounds.json', 'r') as file:
+with open('web_sound_bank/default_sounds/default_sounds.json', 'r') as file:
     # [{'name':, 'key_words':, 'file_bin':},]
     sounds = json.loads(file.read())
 
