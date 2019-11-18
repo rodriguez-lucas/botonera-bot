@@ -50,7 +50,7 @@ class Sound(models.Model):
         return self._tags
 
     def binary_data(self):
-        return self._bin
+        return bytes(self._bin)
 
     def is_approved(self):
         return self._is_approved
