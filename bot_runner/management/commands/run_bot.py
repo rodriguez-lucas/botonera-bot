@@ -22,7 +22,7 @@ class WebSoundBank(AbstractSoundBank):
         user = user_cmd_result.get_object()
         sounds = SoundsForUserCommand(user=user, query=query).execute().get_object()
         return [
-            RemoteSound(sound_id=sound.id(), title=sound.title(), url=self._static_url_for_sound(sound=sound))
+            RemoteSound(sound_id=sound.sound_id(), title=sound.title(), url=self._static_url_for_sound(sound=sound))
             for sound in sounds
         ]
 
