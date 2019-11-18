@@ -7,7 +7,7 @@ class RemoteSound:
         self._title = title
         self._url = url
 
-    def id(self):
+    def sound_id(self):
         return self._sound_id
 
     def title(self):
