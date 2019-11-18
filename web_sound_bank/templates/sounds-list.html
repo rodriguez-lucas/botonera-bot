@@ -40,7 +40,7 @@
                             <td>
                                 <div style="width: 40px;height: 40px;overflow: hidden;border-radius: 50px;position: relative;transform: scale(0.7);border: 2px solid #000;">
                                     <audio controls preload="none"
-                                           src="http://localhost:8000/sound/{{ sound.sound_id }}/{{ sound.formatted_title }}.mp3"
+                                           src="{% url 'sound' sound_id=sound.sound_id title=sound.formatted_title %}"
                                            style="position: absolute;top: -9px;left: -8px">
                                         Your browser does not support the <code>audio</code> element.
                                     </audio>

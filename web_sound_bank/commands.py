@@ -96,10 +96,10 @@ class LoginUserFromTokenCommand(Command):
 
         try:
             user, token_has_expired = SoundBank().user_from_token(token=self._token)
+            SoundBank().delete_token_for_user(user=user)
             if token_has_expired:
                 result.add_error("Token has expired")
             else:
-                SoundBank().delete_token_for_user(user=user)
                 two_hours = 60 * 60 * 2
                 self._request.session.set_expiry(two_hours)
                 self._request.session['user_id'] = user.user_id()
