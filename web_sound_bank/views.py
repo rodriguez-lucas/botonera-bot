@@ -3,8 +3,8 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.views import View
 
-from web_sound_bank.commands import SoundFromIdCommand, SoundsForUserCommand, UserFromIdCommand, \
-    LoginUserFromTokenCommand, UserIsLoggedInCommand, LoggedInUserCommand
+from web_sound_bank.commands import SoundFromIdCommand, SoundsForUserCommand, LoginUserFromTokenCommand, \
+    UserIsLoggedInCommand, LoggedInUserCommand, LogoutUserCommand
 
 
 class LoginView(View):
@@ -41,10 +41,25 @@ class LoggedInView(View):
         return LoggedInUserCommand(request=self.request).execute().get_object()
 
 
+class LogoutView(LoggedInView):
+    def get(self, request):
+        LogoutUserCommand(user=self.user(), request=request).execute()
+        redirect_url = reverse('home')
+        return HttpResponseRedirect(redirect_url)
+
+
 class SoundsList(LoggedInView):
     def get(self, request, *args, **kwargs):
-        sounds = SoundsForUserCommand(user=self.user()).execute().get_object()
+        query = request.GET.get('query', '')
+        sounds = SoundsForUserCommand(user=self.user(), query=query).execute().get_object()
 
-        context = {'user': self.user(), 'sounds': sounds}
+        context = {'user': self.user(), 'sounds': sounds, 'active_tab': {'sounds': True}}
         response = TemplateResponse(request=request, template='sounds-list.html', context=context)
+        return response
+
+
+class UploadSound(LoggedInView):
+    def get(self, request, *args, **kwargs):
+        context = {'user': self.user(), 'active_tab': {'upload_sound': True}}
+        response = TemplateResponse(request=request, template='upload-sound.html', context=context)
         return response

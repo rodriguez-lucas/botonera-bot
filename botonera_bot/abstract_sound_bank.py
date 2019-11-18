@@ -26,3 +26,6 @@ class AbstractSoundBank:
 
     def user_has_selected_sound(self, user_id, sound_id) -> None:
         raise NotImplementedError()
+
+    def login_link_for_user(self, user_id) -> str:
+        raise NotImplementedError()

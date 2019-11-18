@@ -110,6 +110,17 @@ class LoginUserFromTokenCommand(Command):
         return result
 
 
+class LogoutUserCommand(Command):
+    def __init__(self, user, request):
+        self._user = user
+        self._request = request
+
+    def execute(self):
+        SoundBank().delete_token_for_user(user=self._user)
+        del self._request.session['user_id']
+        return Result()
+
+
 class UserIsLoggedInCommand(Command):
     def __init__(self, request):
         self._request = request

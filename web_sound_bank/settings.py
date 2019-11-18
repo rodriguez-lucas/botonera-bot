@@ -22,12 +22,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
-PRODUCTION_SERVER_DOMAIN = os.environ['PRODUCTION_SERVER_DOMAIN']
+SERVER_DOMAIN = os.environ['SERVER_DOMAIN']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ['DEBUG'] == 'True'
 
-ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1', PRODUCTION_SERVER_DOMAIN]
+ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1', SERVER_DOMAIN]
 
 # Application definition
 

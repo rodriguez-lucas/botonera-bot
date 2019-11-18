@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block body %}
+    {% include "nav_bar.html" %}
+    <div class="container" style="padding: 15px;margin: 0;max-width: 100%!important;">
+        {% block content %}{% endblock %}
+    </div>
+{% endblock %}

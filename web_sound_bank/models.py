@@ -43,6 +43,9 @@ class Sound(models.Model):
     def title(self):
         return self._title
 
+    def formatted_title(self):
+        return self._title.replace(' ', '-')
+
     def tags(self):
         return self._tags
 

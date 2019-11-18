@@ -3,9 +3,8 @@ from django.core.management.base import BaseCommand
 from botonera_bot.bot import BotoneraBot
 from botonera_bot.abstract_sound_bank import AbstractSoundBank, RemoteSound
 from web_sound_bank.commands import UserFromIdCommand, SoundsForUserCommand, SoundFromIdCommand, \
-    UserListenedSoundCommand, CreateUserIfItDoesNotExistCommand
-from web_sound_bank.settings import BOT_TOKEN, GET_SOUND_URL
-
+    UserListenedSoundCommand, CreateUserIfItDoesNotExistCommand, LoginTokenForUserCommand
+from web_sound_bank.settings import BOT_TOKEN, GET_SOUND_URL, LOGIN_BASE_URL
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -42,11 +41,22 @@ class WebSoundBank(AbstractSoundBank):
         return CreateUserIfItDoesNotExistCommand(user_id=user_id, username=username, first_name=first_name,
                                                  last_name=last_name).execute()
 
+    def login_link_for_user(self, user_id) -> str:
+        user_cmd_result = UserFromIdCommand(user_id=user_id).execute()
+
+        if not user_cmd_result.has_errors():
+            user = user_cmd_result.get_object()
+            token = LoginTokenForUserCommand(user=user).execute().get_object()
+            return '{base_url}/{token}'.format(base_url=LOGIN_BASE_URL, token=token)
+
+        logger.info('UserCommandErrors: {}'.format(user_cmd_result.errors_as_str()))
+        return ''
+
     def _static_url_for_sound(self, sound):
         sound_title = ''.join([i if ord(i) < 128 else '' for i in sound.title()]).replace(' ', '_')
-        return '{base_url}/{sound_uuid}/{sound_title}'.format(base_url=GET_SOUND_URL,
-                                                              sound_uuid=sound.id(),
-                                                              sound_title=sound_title)
+        return '{base_url}/{sound_id}/{sound_title}'.format(base_url=GET_SOUND_URL,
+                                                            sound_id=sound.sound_id(),
+                                                            sound_title=sound_title)
 
 
 class Command(BaseCommand):
