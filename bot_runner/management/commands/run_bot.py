@@ -1,10 +1,13 @@
+import asyncio
 import logging
+
+import requests
 from django.core.management.base import BaseCommand
 from botonera_bot.bot import BotoneraBot
 from botonera_bot.abstract_sound_bank import AbstractSoundBank, RemoteSound
 from web_sound_bank.commands import UserFromIdCommand, SoundsForUserCommand, SoundFromIdCommand, \
     UserListenedSoundCommand, CreateUserIfItDoesNotExistCommand, LoginTokenForUserCommand
-from web_sound_bank.settings import BOT_TOKEN, GET_SOUND_URL, LOGIN_BASE_URL
+from web_sound_bank.settings import BOT_TOKEN, GET_SOUND_URL, LOGIN_BASE_URL, SERVER_DOMAIN
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -59,8 +62,21 @@ class WebSoundBank(AbstractSoundBank):
                                                             sound_title=sound_title)
 
 
+class KeepAliveHerokuWebServiceHack:
+    def _ping_request(self):
+        response = requests.get(f'{SERVER_DOMAIN}/ping')
+        logger.info(f'Ping: {response}')
+
+    async def main(self):
+        waiting_time_in_minutes = 28
+        self._ping_request()
+        await asyncio.sleep(waiting_time_in_minutes * 60)
+
+
 class Command(BaseCommand):
     help = 'Run telegram bot: botonera_bot with web_sound_bank'
 
     def handle(self, *args, **options):
+        # FIXME horrible hack!
+        asyncio.run(KeepAliveHerokuWebServiceHack().main())
         BotoneraBot(bot_token=BOT_TOKEN, sound_bank=WebSoundBank()).run()

@@ -134,7 +134,3 @@ GET_SOUND_URL = os.environ['GET_SOUND_URL']
 LOGIN_BASE_URL = os.environ['LOGIN_BASE_URL']
 
 BOT_TOKEN = os.environ['BOT_TOKEN']
-
-NEW_RELIC_APP_NAME = "BotoneraBot"
-NEW_RELIC_LICENSE_KEY = os.environ['NEW_RELIC_LICENSE_KEY']
-NEW_RELIC_LOG = os.environ['NEW_RELIC_LOG']

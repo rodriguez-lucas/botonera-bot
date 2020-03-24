@@ -7,6 +7,11 @@ from web_sound_bank.commands import SoundFromIdCommand, SoundsForUserCommand, Lo
     UserIsLoggedInCommand, LoggedInUserCommand, LogoutUserCommand
 
 
+class PingView(View):
+    def get(self, request):
+        return HttpResponse('Pong')
+
+
 class LoginView(View):
     def get(self, request, token):
         result = LoginUserFromTokenCommand(token=token, request=request).execute()
