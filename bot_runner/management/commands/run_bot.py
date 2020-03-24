@@ -64,7 +64,7 @@ class WebSoundBank(AbstractSoundBank):
 
 class KeepAliveHerokuWebServiceHack:
     def _ping_request(self):
-        response = requests.get(f'{SERVER_DOMAIN}/ping')
+        response = requests.get(f'https://{SERVER_DOMAIN}/ping')
         logger.info(f'Ping: {response}')
 
     async def main(self):
