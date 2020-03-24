@@ -37,7 +37,9 @@ class SoundBank:
     def token_for_user(self, user: User) -> str:
         user_login_token = UserLoginToken.for_user(user=user)
         user_login_token.set_token_and_expiration()
+        print(UserLoginToken.objects.all())
         user_login_token.save()
+        print(UserLoginToken.objects.all())
         return user_login_token.token()
 
     def delete_token_for_user(self, user: User) -> None:
