@@ -40,9 +40,6 @@ class SoundBank:
         user_login_token.save()
         return user_login_token.token()
 
-    def delete_token_for_user(self, user: User) -> None:
-        UserLoginToken.objects.filter(_user=user).delete()
-
     def sound_from_id(self, sound_id) -> Sound:
         try:
             return Sound.objects.get(_id=sound_id)
