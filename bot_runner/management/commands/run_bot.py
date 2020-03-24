@@ -80,8 +80,14 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # FIXME horrible hack!
-        threads = [Thread(target=BotoneraBot(bot_token=BOT_TOKEN, sound_bank=WebSoundBank()).run, daemon=True),
-                   Thread(target=KeepAliveHerokuWebServiceHack().run, daemon=True)]
+        threads = [
+            Thread(target=BotoneraBot(bot_token=BOT_TOKEN, sound_bank=WebSoundBank()).run, daemon=True),
+            Thread(target=KeepAliveHerokuWebServiceHack().run, daemon=True)
+        ]
 
         for thread in threads:
             thread.start()
+
+        # Keep alive so the threads are alive too
+        while True:
+            sleep(60 * 60)
