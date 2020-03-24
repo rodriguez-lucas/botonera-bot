@@ -51,6 +51,11 @@ class WebSoundBank(AbstractSoundBank):
         if not user_cmd_result.has_errors():
             user = user_cmd_result.get_object()
             token = LoginTokenForUserCommand(user=user).execute().get_object()
+
+            # FIXME remove
+            from web_sound_bank.models import UserLoginToken
+            print(UserLoginToken.objects.all())
+
             return '{base_url}/{token}'.format(base_url=LOGIN_BASE_URL, token=token)
 
         logger.info('UserCommandErrors: {}'.format(user_cmd_result.errors_as_str()))
