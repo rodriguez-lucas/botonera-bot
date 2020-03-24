@@ -47,17 +47,14 @@ class SoundBank:
             raise SoundNotFoundException
 
     def sounds_for_user(self, user: User, query='') -> List[Sound]:
-        approved_or_uploaded_sounds = Q(_is_approved=True) | Q(_uploader=user)
+        approved_or_uploaded_or_listened_sounds = Q(_is_approved=True) | Q(_uploader=user) | Q(_rank___user=user)
         query_matches_sound = Q(_title__icontains=query) | Q(_tags__icontains=query)
-        qualified_sounds_filter = Q(approved_or_uploaded_sounds & query_matches_sound)
+        qualified_sounds_filter = Q(approved_or_uploaded_or_listened_sounds & query_matches_sound)
 
         all_qualified_sounds = Sound.objects.filter(qualified_sounds_filter)
         ranked_all_sounds = all_qualified_sounds.annotate(count=Coalesce(Sum('_rank___count'), 0)).order_by('-count')
 
-        listened_sounds = Sound.objects.filter(_rank___user=user)
-        ranked_listened_sounds = listened_sounds.annotate(count=Coalesce(Sum('_rank___count'), 0)).order_by('-count')
-
-        return list(ranked_listened_sounds) + [sound for sound in ranked_all_sounds if sound not in ranked_listened_sounds]
+        return ranked_all_sounds
 
     def user_listened_sound(self, user: User, sound: Sound) -> None:
         sound_rank, _ = SoundRank.objects.get_or_create(_user=user, _sound=sound)
