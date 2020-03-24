@@ -1,5 +1,6 @@
-import asyncio
 import logging
+from threading import Thread
+from time import sleep
 
 import requests
 from django.core.management.base import BaseCommand
@@ -67,10 +68,11 @@ class KeepAliveHerokuWebServiceHack:
         response = requests.get(f'http://{SERVER_DOMAIN}/ping')
         logger.info(f'Ping: {response}')
 
-    async def main(self):
+    def run(self):
         waiting_time_in_minutes = 28
-        self._ping_request()
-        await asyncio.sleep(waiting_time_in_minutes * 60)
+        while True:
+            self._ping_request()
+            sleep(waiting_time_in_minutes * 60)
 
 
 class Command(BaseCommand):
@@ -78,5 +80,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # FIXME horrible hack!
-        asyncio.run(KeepAliveHerokuWebServiceHack().main())
-        BotoneraBot(bot_token=BOT_TOKEN, sound_bank=WebSoundBank()).run()
+        threads = [Thread(target=BotoneraBot(bot_token=BOT_TOKEN, sound_bank=WebSoundBank()).run, daemon=True),
+                   Thread(target=KeepAliveHerokuWebServiceHack().run, daemon=True)]
+
+        for thread in threads:
+            thread.start()
