@@ -14,5 +14,5 @@ urlpatterns = [
     path('login/<token>', LoginView.as_view(), name='login'),
     path('logout', LogoutView.as_view(), name='logout'),
     path('login-required', TemplateView.as_view(template_name='login-required.html'), name='login-required'),
-    path('ping/', PingView.as_view(), name='login-required'),
+    path('ping/', PingView.as_view(), name='ping'),
 ]
